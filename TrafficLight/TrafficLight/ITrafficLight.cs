@@ -11,7 +11,7 @@ namespace TrafficLight
     {
         bool SwitchToGreen();
         bool SwitchToRed();
-        int CurrentGreenTime { get; }
+        int TimeLeft { get; set; }
         TrafficLightColor Color { get; }
     }
 }

@@ -5,14 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using static TrafficLight.Constant;
 
-namespace TrafficLight
+namespace TrafficLightSimulation.Car
 {
     public class Car
     {
         public Direction Direction { get; set; }
         public int CarExitTime { get; set; }
-        public bool IsPassedCrossroad { get; set; } 
         public int CarArrivalTimeSeconds { get; set; }
+        public bool IsCarExited { get; set; } = false;
         public Car(Direction direction, int carExitTime, int carArrivalTimeSeconds)
         {
             Direction = direction;

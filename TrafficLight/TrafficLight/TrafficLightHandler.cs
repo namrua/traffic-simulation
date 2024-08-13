@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static TrafficLight.Constant;
 using Timer = System.Timers.Timer;
 
 namespace TrafficLight
 {
     public class TrafficLightHandler : ITrafficLightHandler
     {
-        public  ITrafficLight _nsLight;
-        public  ITrafficLight _ewLight;
+        public ITrafficLight _nsLight;
+        public ITrafficLight _ewLight;
         public int periodX1;
         public int periodX2;
         public int EventTime { get; set; }
@@ -42,12 +43,47 @@ namespace TrafficLight
                 _ewLight.SwitchToGreen();
                 currentTime = currentTime - periodX1;
             }
+            _ewLight.TimeLeft = _nsLight.TimeLeft = periodX1 - currentTime;
         }
 
-        public string GetLightStatus()
+        public Dictionary<Direction, SampleTrafficLight> GetTrafficLightsStatus()
         {
-            return $"North and South Light: {_nsLight.Color} with {periodX1 - currentTime} seconds left" +
-                $"\nEast and West Light: {_ewLight.Color} with {periodX1 - currentTime} seconds left";
+            var result = new Dictionary<Direction, SampleTrafficLight>
+            {
+                {
+                    Direction.South,
+                    new SampleTrafficLight
+                    {
+                        Color = _nsLight.Color,
+                        TimeLeft = _nsLight.TimeLeft
+                    }
+                },
+                 {
+                    Direction.North,
+                    new SampleTrafficLight
+                    {
+                        Color = _nsLight.Color,
+                        TimeLeft = _nsLight.TimeLeft
+                    }
+                },
+                {
+                    Direction.East,
+                    new SampleTrafficLight
+                    {
+                        Color = _ewLight.Color,
+                        TimeLeft = _ewLight.TimeLeft
+                    }
+                },
+                {
+                    Direction.West,
+                    new SampleTrafficLight
+                    {
+                        Color = _ewLight.Color,
+                        TimeLeft = _ewLight.TimeLeft
+                    }
+                }
+            };
+            return result;
         }
 
         public void Execute()

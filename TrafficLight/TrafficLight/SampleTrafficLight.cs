@@ -7,10 +7,10 @@ using static TrafficLight.Constant;
 
 namespace TrafficLight
 {
-    public class SimpleTrafficLight : ITrafficLight
+    public class SampleTrafficLight : ITrafficLight
     {
         public TrafficLightColor Color { get; set; }
-        public int CurrentGreenTime { get; set; }
+        public int TimeLeft { get; set; }
 
         public bool SwitchToGreen()
         {

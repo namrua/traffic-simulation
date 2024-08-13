@@ -3,58 +3,79 @@ using TrafficLight;
 using Microsoft.Extensions.DependencyInjection;
 using Timer = System.Timers.Timer;
 using static TrafficLight.Constant;
+using Microsoft.Extensions.Configuration;
+using TrafficLightSimulation;
+using TrafficLightSimulation.Car;
 
-//add DI
-var serviceProvider = new ServiceCollection()
-    .AddTransient<SimpleTrafficLight>()
-    .AddTransient<ICarHandler, CarHandler>()
-    .AddTransient<ITrafficLightHandler, TrafficLightHandler>()
-    .AddTransient<ITrafficLight, SimpleTrafficLight>()
-    .BuildServiceProvider();
-var initialTimeAppStart = DateTime.Now;
-
-//default those values before we have azure app configs mechanism
-int vehicleFrequencyInNorth = 1; // Vehicle frequency per second in direction for North
-int vehicleFrequencyInSouth = 1; // Vehicle frequency per second in direction for South
-int vehicleFrequencyInEast = 1; // Vehicle frequency second min in direction for East
-int vehicleFrequencyInWest = 1; // Vehicle frequency second min in direction for West
-int vehicleFrequencyNS = vehicleFrequencyInNorth + vehicleFrequencyInSouth;
-int vehicleFrequencyEW = vehicleFrequencyInEast + vehicleFrequencyInWest;
-int carExitTime = 5; // Time for a car to exit the crossroad
-
-var nsLight = serviceProvider.GetRequiredService<SimpleTrafficLight>();
-var ewLight = serviceProvider.GetRequiredService<SimpleTrafficLight>();
-var carHandler = serviceProvider.GetRequiredService<ICarHandler>();
-var trafficLightHandler = serviceProvider.GetRequiredService<ITrafficLightHandler>();
-
-var (periodX1, periodX2) = Helper.CalculateTrafficLight(100, vehicleFrequencyNS, vehicleFrequencyEW);
-trafficLightHandler.SetDefaultValues(periodX1, periodX2, 0);
-
-//schedular Car direction
-carHandler.AddCar(new Car(direction: Direction.North, carExitTime: carExitTime, carArrivalTimeSeconds: vehicleFrequencyInNorth * 60));
-carHandler.AddCar(new Car(direction: Direction.South, carExitTime: carExitTime, carArrivalTimeSeconds: vehicleFrequencyInSouth * 60));
-carHandler.AddCar(new Car(direction: Direction.East, carExitTime: carExitTime, carArrivalTimeSeconds: vehicleFrequencyInEast * 60));
-carHandler.AddCar(new Car(direction: Direction.West, carExitTime: carExitTime, carArrivalTimeSeconds: vehicleFrequencyInWest * 60));
-var simulator = new Simulator();
-
-simulator.ScheduleEvent(carHandler, carExitTime);
-
-//default light when application start: NS is Green and EW is Red
-simulator.ScheduleEvent(trafficLightHandler, periodX1);
-
-// Run the simulation
-simulator.Run();
-
-// This block is out side the implementation
-// Simulate the traffic light and Car arrival
-var trafficLightTimer = new Timer(1 * 1000);
-trafficLightTimer.Elapsed += (sender, e) =>
+internal class Program
 {
-    var time = (DateTime.Now - initialTimeAppStart).Seconds;
-    trafficLightHandler.UpdateLights(time);
-    Console.WriteLine("TimeAppRun: " + time);
-    Console.WriteLine(trafficLightHandler.GetLightStatus());
-};
-trafficLightTimer.Start();
+    private static void Main(string[] args)
+    {
+        // Add DI
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddUserSecrets<Program>();
 
-Console.ReadLine();
+        IConfiguration config = builder.Build();
+        var applicationSettings = new ApplicationSettings();
+        config.GetSection("ApplicationSettings").Bind(applicationSettings);
+
+        var serviceProvider = new ServiceCollection()
+            .AddDI(config)
+            .BuildServiceProvider();
+
+        var initialTimeAppStart = DateTime.Now;
+
+        int VNorth = applicationSettings.Vehicle.VehicleFrequencyInNorth;
+        int VSouth = applicationSettings.Vehicle.VehicleFrequencyInSouth;
+        int VEast = applicationSettings.Vehicle.VehicleFrequencyInEast;
+        int VWest = applicationSettings.Vehicle.VehicleFrequencyInWest;
+        int carExitTime = applicationSettings.Vehicle.CarExitTime;
+        int totalLightInSeconds = applicationSettings.TrafficLight.TotalLightInSeconds;
+
+        var simulator = new Simulator();
+        var northSouthLight = serviceProvider.GetRequiredService<SampleTrafficLight>();
+        var eastWestLight = serviceProvider.GetRequiredService<SampleTrafficLight>();
+        var carHandler = serviceProvider.GetRequiredService<ICarHandler>();
+        var trafficLightHandler = serviceProvider.GetRequiredService<ITrafficLightHandler>();
+
+        var (periodX1, periodX2) = Helper.CalculateTrafficLight(totalLightInSeconds, VNorth + VSouth, VEast + VWest);
+        trafficLightHandler.SetDefaultValues(periodX1, periodX2, 0);
+
+        // Schedule cars in each direction
+        carHandler.AddCarInQueue(new Car(direction: Direction.North, carExitTime: carExitTime, carArrivalTimeSeconds: VNorth));
+        carHandler.AddCarInQueue(new Car(direction: Direction.South, carExitTime: carExitTime, carArrivalTimeSeconds: VSouth));
+        carHandler.AddCarInQueue(new Car(direction: Direction.East, carExitTime: carExitTime, carArrivalTimeSeconds: VEast));
+        carHandler.AddCarInQueue(new Car(direction: Direction.West, carExitTime: carExitTime, carArrivalTimeSeconds: VWest));
+
+        simulator.ScheduleEvent(carHandler, 100);
+
+        // Set default traffic light when application starts: NS is Green and EW is Red
+        simulator.ScheduleEvent(trafficLightHandler, periodX1);
+
+        // Run the simulation
+        simulator.Run();
+        Console.WriteLine("Application is running...");
+
+        // Simulate the traffic light and car arrival
+        // Update information every 5 seconds
+        var trafficLightTimer = new Timer(5 * 1000);
+        var elapsedTime = 0;
+        trafficLightTimer.Elapsed += (sender, e) =>
+        {
+            elapsedTime = (int)(DateTime.Now - initialTimeAppStart).TotalSeconds;
+            trafficLightHandler.UpdateLights(elapsedTime);
+            var trafficLightsStatus = trafficLightHandler.GetTrafficLightsStatus();
+            Console.WriteLine("Elapsed Time: " + elapsedTime);
+            foreach (var light in trafficLightsStatus)
+            {
+                Console.WriteLine($"{light.Key}: {light.Value.Color} with {light.Value.TimeLeft} seconds left");
+            }
+            Console.WriteLine(carHandler.ProcessCarStatus(5, trafficLightsStatus));
+        };
+        trafficLightTimer.Start();
+
+        Console.ReadLine();
+    }
+}
