@@ -8,20 +8,17 @@ namespace TrafficLight
 {
     public class Simulator
     {
-        private readonly PriorityQueue<IEvent, int> eventQueue;
-        public CarHandler CarHandler { get; }
-        public TrafficLightHandler TrafficLightController { get; }
+        private readonly PriorityQueue<IQueueEvent, int> eventQueue;
 
-        public Simulator(CarHandler carHandler, TrafficLightHandler trafficLightController)
+        public Simulator()
         {
-            eventQueue = new PriorityQueue<IEvent, int>();
-            CarHandler = carHandler;
-            TrafficLightController = trafficLightController;
+            eventQueue = new PriorityQueue<IQueueEvent, int>();
         }
 
-        public void ScheduleEvent(IEvent evt)
+        public void ScheduleEvent(IQueueEvent evt, int time)
         {
-            eventQueue.Enqueue(evt, evt.EventTime);
+            evt.ChangeEventTime(time);
+            eventQueue.Enqueue(evt, time);
         }
 
         public void Run()
@@ -29,7 +26,7 @@ namespace TrafficLight
             while (eventQueue.Count > 0)
             {
                 var res = eventQueue.Dequeue();
-                res.Execute(this);
+                res.Execute();
             }
         }
     }

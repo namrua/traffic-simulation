@@ -10,16 +10,20 @@ namespace TrafficLight
     public class SimpleTrafficLight : ITrafficLight
     {
         public TrafficLightColor Color { get; set; }
-        public int CurrentTimeLeftInSeconds { get; set; }
+        public int CurrentGreenTime { get; set; }
 
-        public void SwitchToGreen()
+        public bool SwitchToGreen()
         {
+            var status = TrafficLightColor.Green == Color ? false : true;
             Color = TrafficLightColor.Green;
+            return status;
         }
 
-        public void SwitchToRed()
+        public bool SwitchToRed()
         {
+            var status = TrafficLightColor.Red == Color ? false : true;
             Color = TrafficLightColor.Red;
+            return status;
         }
 
     }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TrafficLight
 {
-    public class TrafficLightChangeEvent : IEvent
+    public class TrafficLightChangeEvent : IQueueEvent
     {
         public int EventTime { get; }
         private readonly Simulator simulator;

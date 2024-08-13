@@ -3,23 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Timer = System.Timers.Timer;
 
 namespace TrafficLight
 {
-    public class TrafficLightHandler
+    public class TrafficLightHandler : ITrafficLightHandler
     {
-        private readonly ITrafficLight _nsLight;
-        private readonly ITrafficLight _ewLight;
-        private readonly int periodX1;
-        private readonly int periodX2;
+        public  ITrafficLight _nsLight;
+        public  ITrafficLight _ewLight;
+        public int periodX1;
+        public int periodX2;
+        public int EventTime { get; set; }
         private int currentTime = 0;
-
-        public TrafficLightHandler(ITrafficLight nslight, ITrafficLight ewLight, int periodX1, int periodX2)
+        public TrafficLightHandler(ITrafficLight nslight, ITrafficLight ewLight)
         {
             _nsLight = nslight;
             _ewLight = ewLight;
+        }
+
+        public void SetDefaultValues(int periodX1, int periodX2, int eventTime)
+        {
             this.periodX1 = periodX1;
             this.periodX2 = periodX2;
+            EventTime = eventTime;
         }
 
         public void UpdateLights(int time)
@@ -34,13 +40,24 @@ namespace TrafficLight
             {
                 _nsLight.SwitchToRed();
                 _ewLight.SwitchToGreen();
+                currentTime = currentTime - periodX1;
             }
         }
 
         public string GetLightStatus()
         {
-            return $"NS: {_nsLight.Color}, Time left: {_nsLight.CurrentTimeLeftInSeconds}, " +
-                $"\nEW: {_ewLight.Color}, Time left: {_ewLight.CurrentTimeLeftInSeconds}";
+            return $"North and South Light: {_nsLight.Color} with {periodX1 - currentTime} seconds left" +
+                $"\nEast and West Light: {_ewLight.Color} with {periodX1 - currentTime} seconds left";
+        }
+
+        public void Execute()
+        {
+            UpdateLights(EventTime);
+        }
+
+        public void ChangeEventTime(int time)
+        {
+            EventTime = time;
         }
     }
 }

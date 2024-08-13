@@ -9,9 +9,9 @@ namespace TrafficLight
 {
     public interface ITrafficLight
     {
-        void SwitchToGreen();
-        void SwitchToRed();
-        int CurrentTimeLeftInSeconds { get; }
+        bool SwitchToGreen();
+        bool SwitchToRed();
+        int CurrentGreenTime { get; }
         TrafficLightColor Color { get; }
     }
 }

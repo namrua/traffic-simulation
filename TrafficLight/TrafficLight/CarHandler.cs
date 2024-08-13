@@ -1,61 +1,48 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static TrafficLight.Constant;
 
 namespace TrafficLight
 {
-    public class CarHandler
+    public class CarHandler : ICarHandler
     {
-        private readonly TrafficLightHandler lightHandler;
-        private readonly Queue<Car> northQueue;
-        private readonly Queue<Car> southQueue;
-        private readonly Queue<Car> eastQueue;
-        private readonly Queue<Car> westQueue;
-        private readonly int carExitTime;
-
-        public CarHandler(TrafficLightHandler lightHandler, int carExitTime)
+        private readonly Queue<Car> carQueue;
+        public int EventTime { get; set; }
+        private readonly IServiceScopeFactory serviceScopeFactory;
+        public CarHandler(IServiceScopeFactory serviceScopeFactory)
         {
-            this.lightHandler = lightHandler;
-            northQueue = new Queue<Car>();
-            southQueue = new Queue<Car>();
-            eastQueue = new Queue<Car>();
-            westQueue = new Queue<Car>();
-            this.carExitTime = carExitTime;
+            this.serviceScopeFactory = serviceScopeFactory;
+            carQueue = new Queue<Car>();
         }
-
-        public void ArriveCar(Car car)
+        public void AddCar(Car car)
         {
-            switch (car.Direction)
+            carQueue.Enqueue(car);
+        } 
+
+        public void Execute()
+        {
+            
+            while(carQueue.Count > 0)
             {
-                case "North":
-                    northQueue.Enqueue(car);
-                    break;
-                case "South":
-                    southQueue.Enqueue(car);
-                    break;
-                case "East":
-                    eastQueue.Enqueue(car);
-                    break;
-                case "West":
-                    westQueue.Enqueue(car);
-                    break;
+                var car = carQueue.Dequeue();
+                var lightTraffct = serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<ITrafficLightHandler>();
+                //var nsLight = lightTraffct._nsLight;
+                Console.WriteLine($"A Car from the {car.Direction} is comming in {car.CarArrivalTimeSeconds}");
             }
         }
 
-        public Queue<Car> GetQueue(string direction)
+        public string GetCarStatus()
         {
-            return direction switch
-            {
-                "North" => northQueue,
-                "South" => southQueue,
-                "East" => eastQueue,
-                "West" => westQueue,
-                _ => new Queue<Car>()
-            };
+            return $"There are {carQueue.Count} cars in the queue";
         }
 
-        public TrafficLightHandler TrafficLightController => lightHandler;
+        public void ChangeEventTime(int time)
+        {
+            EventTime = time;
+        }
     }
 }

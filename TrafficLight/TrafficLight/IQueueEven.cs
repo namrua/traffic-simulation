@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace TrafficLight
 {
-    public interface IEvent
+    public interface IQueueEvent
     {
-        void Execute(Simulator simulator);
+        void Execute();
         int EventTime { get; }
+        void ChangeEventTime(int time);
     }
 }

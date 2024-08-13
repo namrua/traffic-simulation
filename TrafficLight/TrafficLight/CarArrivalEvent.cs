@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TrafficLight
 {
-    public class CarArrivalEvent: IEvent
+    public class CarArrivalEvent: IQueueEvent
     {
         public int EventTime { get; }
         private readonly string direction;
@@ -19,7 +19,7 @@ namespace TrafficLight
             this.simulator = simulator;
         }
 
-        public void Execute(Simulator simulator)
+        public void Execute()
         {
             var car = new Car(direction);
             simulator.CarHandler.ArriveCar(car);
