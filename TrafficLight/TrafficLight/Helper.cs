@@ -8,6 +8,9 @@ namespace TrafficLight
 {
     public class Helper
     {
+        /// <summary>
+        /// Calculates the time duration for traffic light signals based on the total light duration and vehicle frequencies.
+        /// </summary>
         public static (int, int) CalculateTrafficLight(int totalLightInSeconds, int vehicleFrequencyNS, int vehicleFrequencyEW)
         {
             double m = (double)vehicleFrequencyNS / (vehicleFrequencyEW + vehicleFrequencyNS);

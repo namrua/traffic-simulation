@@ -9,11 +9,11 @@ namespace TrafficLightSimulation
     public class ApplicationSettings
     {
 
-        public Vehicle Vehicle { get; set; }
-        public TrafficLight TrafficLight { get; set; }
+        public VehicleSetting Vehicle { get; set; }
+        public TrafficLightSetting TrafficLight { get; set; }
     }
 
-    public class Vehicle
+    public class VehicleSetting
     {
         public int VehicleFrequencyInNorth { get; set; }
         public int VehicleFrequencyInSouth { get; set; }
@@ -22,7 +22,7 @@ namespace TrafficLightSimulation
         public int CarExitTime { get; set; }
     }
 
-    public class TrafficLight
+    public class TrafficLightSetting
     {
         public int TotalLightInSeconds { get; set; }
     }

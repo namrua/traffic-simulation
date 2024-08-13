@@ -30,6 +30,12 @@ namespace TrafficLight
             //TODO : Implement the logic for each Car
         }
 
+        /// <summary>
+        /// Processes the status of cars based on the given time and traffic light status.
+        /// </summary>
+        /// <param name="time">The current time.</param>
+        /// <param name="trafficLightsStatus">The dictionary containing the status of traffic lights.</param>
+        /// <returns>A string representing the status of cars.</returns>
         public string ProcessCarStatus(int time, Dictionary<Direction, SampleTrafficLight> trafficLightsStatus)
         {
             var result = new StringBuilder();

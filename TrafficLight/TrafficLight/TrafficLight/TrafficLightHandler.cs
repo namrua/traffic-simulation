@@ -29,6 +29,10 @@ namespace TrafficLight
             EventTime = eventTime;
         }
 
+        /// <summary>
+        /// Updates the traffic lights based on the given time.
+        /// </summary>
+        /// <param name="time">The current time.</param>
         public void UpdateLights(int time)
         {
             currentTime = time % (periodX1 + periodX2);
